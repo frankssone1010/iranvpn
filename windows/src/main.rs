@@ -62,7 +62,7 @@ impl eframe::App for IranVpnApp {
             }
 
             let status = if self.is_connecting {
-                "Connecting…"
+                "Connecting…".to_string()
             } else if self.is_connected {
                 self.active_path
                     .as_deref()
@@ -94,7 +94,7 @@ impl eframe::App for IranVpnApp {
                     match std::thread::scope(|s| {
                         s.spawn(|| {
                             let rt = tokio::runtime::Runtime::new().unwrap();
-                            rt.block_on(run_connect())
+                            run_connect()?   // because run_connect() returns a Result, not a future
                         })
                         .join()
                         .unwrap()
@@ -181,8 +181,9 @@ struct WintunState {
 fn start_wintun_tunnel() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     use std::sync::Arc;
 
-    let adapter = wintun::Adapter::create("IranVPN", "IranVPN", None)
-        .map_err(|e| format!("Wintun create adapter: {:?}", e))?;
+    use wintun::{Wintun, Adapter};
+    let wintun = Wintun::load()?;
+    let adapter = Adapter::create(&wintun, "IranVPN", "IranVPN", None)?;
     let session = adapter
         .start_session(wintun::MAX_RING_CAPACITY)
         .map_err(|e| format!("Wintun start session: {:?}", e))?;
@@ -192,7 +193,7 @@ fn start_wintun_tunnel() -> Result<(), Box<dyn std::error::Error + Send + Sync>>
     let thread_handle = std::thread::spawn(move || run_packet_loop(session_clone));
 
     let state = WintunState {
-        _adapter: adapter,
+        _adapter: Arc<Adapter>,
         session,
         thread_handle: Some(thread_handle),
     };
