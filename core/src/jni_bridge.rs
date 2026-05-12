@@ -10,7 +10,7 @@ use std::ops::Deref;
 
 fn sources_from_jstring(env: &JNIEnv, s: JString) -> Result<Vec<crate::config::ConfigSource>, String> {
     let s: String = env
-        .get_string(s)
+        .get_string(&s)
         .map_err(|e| e.to_string())?
         .into();
     serde_json::from_str(&s).map_err(|e| e.to_string())
