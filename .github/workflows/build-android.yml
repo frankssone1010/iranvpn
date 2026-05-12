@@ -33,14 +33,25 @@ jobs:
       - name: Install cargo-ndk
         run: cargo install cargo-ndk
 
-      - name: Build Rust Core
+      - name: Fix NDK environment variables
+        run: |
+          echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/25.1.8937393" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/25.1.8937393" >> $GITHUB_ENV
+
+      - name: Build Rust Core (with debug)
         env:
           ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/25.1.8937393
+          ANDROID_NDK_ROOT: ${{ env.ANDROID_HOME }}/ndk/25.1.8937393
         run: |
           chmod +x ./scripts/build-android-core.sh
-          ./scripts/build-android-core.sh 2>&1 | tee rust-build.log
+          # Show the script content for debugging
+          echo "=== Content of build-android-core.sh ==="
+          cat ./scripts/build-android-core.sh
+          echo "========================================"
+          # Run with bash -x to see each command
+          bash -x ./scripts/build-android-core.sh 2>&1 | tee rust-build.log
           if [ ${PIPESTATUS[0]} -ne 0 ]; then
-            echo "Rust build failed. Last 50 lines of log:"
+            echo "Rust build failed. Last 50 lines:"
             tail -50 rust-build.log
             exit 1
           fi
