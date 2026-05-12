@@ -34,15 +34,6 @@ jobs:
           if (Test-Path windows/target) { Get-ChildItem windows/target } else { Write-Host "windows/target not found" }
           echo "Checking if target/release exists at root:"
           if (Test-Path target/release) { Get-ChildItem target/release } else { Write-Host "target/release not found" }
-    
-      - name: List release directory contents
-        run: |
-          echo "Contents of windows/target/release:"
-          dir windows\target\release
-          echo "Contents of target/release (if any):"
-          dir target\release 2>nul || echo "No target\release folder"
-          echo "Searching for any .exe files in the whole project:"
-          dir /s /b *.exe
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
