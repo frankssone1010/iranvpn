@@ -22,6 +22,19 @@ jobs:
         working-directory: windows
         run: cargo build --release
 
+      - name: Find built executable
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Listing all directories from root:"
+          Get-ChildItem -Recurse -Directory -Name | Select-Object -First 20
+          echo "Searching for any .exe files (including debug):"
+          Get-ChildItem -Recurse -Filter *.exe | Select-Object FullName
+          echo "Checking if windows/target exists at all:"
+          if (Test-Path windows/target) { Get-ChildItem windows/target } else { Write-Host "windows/target not found" }
+          echo "Checking if target/release exists at root:"
+          if (Test-Path target/release) { Get-ChildItem target/release } else { Write-Host "target/release not found" }
+    
       - name: List release directory contents
         run: |
           echo "Contents of windows/target/release:"
