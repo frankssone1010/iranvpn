@@ -17,12 +17,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Android SDK
+      - name: Setup Android SDK and NDK
         uses: android-actions/setup-android@v3
         with:
           packages: "platforms;android-35 build-tools;35.0.0 ndk;25.1.8937393"
 
-      - name: Setup Rust and Android Targets with Retry
+      - name: Setup Rust and Android Targets
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android, armv7-linux-androideabi, i686-linux-android, x86_64-linux-android
@@ -31,12 +31,16 @@ jobs:
         run: cargo install cargo-ndk
 
       - name: Build Rust Core
-        run: ./scripts/build-android-core.sh
         env:
           ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/25.1.8937393
+        run: |
+          chmod +x ./scripts/build-android-core.sh
+          ./scripts/build-android-core.sh
 
       - name: Fetch tun2socks prebuilts
-        run: ./scripts/fetch-tun2socks-prebuilt.sh
+        run: |
+          chmod +x ./scripts/fetch-tun2socks-prebuilt.sh
+          ./scripts/fetch-tun2socks-prebuilt.sh
 
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
