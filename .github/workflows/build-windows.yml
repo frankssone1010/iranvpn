@@ -22,8 +22,17 @@ jobs:
         working-directory: windows
         run: cargo build --release
 
+      - name: List release directory contents
+        run: |
+          echo "Contents of windows/target/release:"
+          dir windows\target\release
+          echo "Contents of target/release (if any):"
+          dir target\release 2>nul || echo "No target\release folder"
+          echo "Searching for any .exe files in the whole project:"
+          dir /s /b *.exe
+
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
           name: iranvpn-windows-x64
-          path: windows/target/release/*.exe
+          path: '**/*.exe'
