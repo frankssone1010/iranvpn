@@ -184,11 +184,12 @@ struct WintunState {
 
 #[cfg(target_os = "windows")]
 fn start_wintun_tunnel() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    use wintun::{Adapter, Session, MAX_RING_CAPACITY};
+    use wintun::{Adapter, MAX_RING_CAPACITY};
     use std::sync::Arc;
 
-    // The free function wintun::load() returns Arc<Wintun>
-    let wintun = wintun::load()?;
+    // SAFETY: wintun::load() is unsafe because it loads a system driver.
+    // This is a standard call for creating a Wintun adapter.
+    let wintun = unsafe { wintun::load()? };
     let adapter = Adapter::create(&wintun, "IranVPN", "IranVPN", None)?;
     let session = adapter
         .start_session(MAX_RING_CAPACITY)
