@@ -36,7 +36,7 @@ pub unsafe extern "C" fn Java_org_opensignalfoundation_iranvpn_Native_fetchServe
         Ok::<_, String>(serde_json::to_string(&list).map_err(|e| e.to_string())?)
     })();
     match result {
-        Ok(json) => jstring_from_json(&env, &json),
+        Ok(json) => jstring_from_json(&mut env, &json),
         Err(e) => {
             let _ = env.throw_new("java/lang/RuntimeException", &e);
             std::ptr::null_mut()
