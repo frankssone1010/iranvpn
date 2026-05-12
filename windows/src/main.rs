@@ -1,7 +1,8 @@
 //! Iran VPN Windows client. Wintun TUN + fallback engine (Psiphon, Xray, Rostam).
 
 use std::sync::Arc;
-use wintun::Wintun;
+use wintun::Adapter;
+// use wintun::Wintun;
 use eframe::egui;
 use iran_vpn_core::{
     config::{PathConfig, PathKind},
@@ -175,7 +176,7 @@ static WINTUN_STATE: std::sync::OnceLock<std::sync::Mutex<Option<WintunState>>> 
 
 #[cfg(target_os = "windows")]
 struct WintunState {
-    _adapter: Arc<Adapter>,
+    _adapter: Arc<wintun::Adapter>,
     session: std::sync::Arc<wintun::Session>,
     thread_handle: Option<std::thread::JoinHandle<()>>,
 }
@@ -185,8 +186,14 @@ fn start_wintun_tunnel() -> Result<(), Box<dyn std::error::Error + Send + Sync>>
     use std::sync::Arc;
 
     use wintun::{Wintun, Adapter};
-    let wintun = wintun::Wintun::load()?;
+    fn new() -> Result<Self, Box<dyn std::error::Error>> {
+    use wintun::{Adapter, Wintun};
+    let wintun = Wintun::load()?;   // This returns Arc<Wintun>
     let adapter = Adapter::create(&wintun, "IranVPN", "IranVPN", None)?;
+    Ok(Self {
+        _adapter: adapter,   // adapter is Arc<Adapter>
+    })
+}
     let session = adapter
         .start_session(wintun::MAX_RING_CAPACITY)
         .map_err(|e| format!("Wintun start session: {:?}", e))?;
