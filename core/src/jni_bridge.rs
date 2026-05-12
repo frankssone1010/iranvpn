@@ -23,7 +23,7 @@ fn jstring_from_json(env: &JNIEnv, json: &str) -> jstring {
 /// Fetch server list. Called from Kotlin: Native.fetchServerList(sourcesJson: String): String
 #[no_mangle]
 pub unsafe extern "C" fn Java_org_opensignalfoundation_iranvpn_Native_fetchServerList(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JObject,
     sources_json: JString,
 ) -> jstring {
