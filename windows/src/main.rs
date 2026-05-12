@@ -95,7 +95,7 @@ impl eframe::App for IranVpnApp {
                     self.error = None;
 
                     // Spawn the connection in a separate thread so UI doesn't freeze
-                    let is_connecting_flag = self.is_connecting.clone();
+                    let _is_connecting_flag = self.is_connecting.clone();
                     std::thread::spawn(move || {
                         let result = run_connect();
                         // Communicate back to UI (simplified: we'll just rely on the flag)
@@ -184,13 +184,14 @@ struct WintunState {
 
 #[cfg(target_os = "windows")]
 fn start_wintun_tunnel() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    use wintun::{Adapter, Wintun};
+    use wintun::{Adapter, Session, MAX_RING_CAPACITY};
     use std::sync::Arc;
 
-    let wintun = Wintun::load()?;   // Returns Arc<Wintun>
-    let adapter = Adapter::create(&wintun, "IranVPN", "IranVPN", None)?;  // Returns Arc<Adapter>
+    // The free function wintun::load() returns Arc<Wintun>
+    let wintun = wintun::load()?;
+    let adapter = Adapter::create(&wintun, "IranVPN", "IranVPN", None)?;
     let session = adapter
-        .start_session(wintun::MAX_RING_CAPACITY)
+        .start_session(MAX_RING_CAPACITY)
         .map_err(|e| format!("Wintun start session: {:?}", e))?;
     let session = Arc::new(session);
     let session_clone = session.clone();
@@ -198,7 +199,7 @@ fn start_wintun_tunnel() -> Result<(), Box<dyn std::error::Error + Send + Sync>>
     let thread_handle = std::thread::spawn(move || run_packet_loop(session_clone));
 
     let state = WintunState {
-        _adapter: adapter.clone(),   // adapter is already Arc<Adapter>
+        _adapter: adapter,
         session,
         thread_handle: Some(thread_handle),
     };
