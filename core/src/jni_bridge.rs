@@ -16,7 +16,7 @@ fn sources_from_jstring(env: &mut JNIEnv, s: JString) -> Result<Vec<crate::confi
     serde_json::from_str(&s).map_err(|e| e.to_string())
 }
 
-fn jstring_from_json(env: &JNIEnv, json: &str) -> jstring {
+fn jstring_from_json(env: &mut JNIEnv, json: &str) -> jstring {
     env.new_string(json).unwrap().into_raw()
 }
 
