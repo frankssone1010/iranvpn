@@ -19,7 +19,7 @@ if command -v cargo-ndk &>/dev/null; then
   cd "$PROJECT_ROOT"
   cargo ndk -t armeabi-v7a -t arm64-v8a -t x86 -t x86_64 \
     -o "$JNI_LIBS" \
-    -p iran-vpn-core build --release --features jni
+    build --release --features jni -p iran-vpn-core
 else
   echo "Building with cargo (set ANDROID_NDK_HOME for NDK path)..."
   mkdir -p "$JNI_LIBS"
