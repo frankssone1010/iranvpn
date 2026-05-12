@@ -6,9 +6,9 @@
 use jni::objects::{JObject, JString};
 use jni::sys::jstring;
 use jni::JNIEnv;
-use std::ops::Deref;
+// use std::ops::Deref;
 
-fn sources_from_jstring(env: &JNIEnv, s: JString) -> Result<Vec<crate::config::ConfigSource>, String> {
+fn sources_from_jstring(env: &mut JNIEnv, s: JString) -> Result<Vec<crate::config::ConfigSource>, String> {
     let s: String = env
         .get_string(&s)
         .map_err(|e| e.to_string())?
@@ -28,7 +28,7 @@ pub unsafe extern "C" fn Java_org_opensignalfoundation_iranvpn_Native_fetchServe
     sources_json: JString,
 ) -> jstring {
     let result = (|| {
-        let sources = sources_from_jstring(&env, sources_json)?;
+        let sources = sources_from_jstring(&mut env, sources_json)?;
         let list = tokio::runtime::Runtime::new()
             .map_err(|e| e.to_string())?
             .block_on(crate::fetch::fetch_server_list(&sources))
