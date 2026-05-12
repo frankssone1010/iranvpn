@@ -1,5 +1,7 @@
 //! Iran VPN Windows client. Wintun TUN + fallback engine (Psiphon, Xray, Rostam).
 
+use std::sync::Arc;
+use wintun::Wintun;
 use eframe::egui;
 use iran_vpn_core::{
     config::{PathConfig, PathKind},
@@ -91,14 +93,15 @@ impl eframe::App for IranVpnApp {
                 if ui.button("Connect").clicked() {
                     self.is_connecting = true;
                     self.error = None;
-                    match std::thread::scope(|s| {
+                    let result = std::thread::scope(|s| {
                         s.spawn(|| {
-                            let rt = tokio::runtime::Runtime::new().unwrap();
-                            run_connect()?   // because run_connect() returns a Result, not a future
+                            // let rt = tokio::runtime::Runtime::new().unwrap();
+                            run_connect()   // because run_connect() returns a Result, not a future
                         })
                         .join()
                         .unwrap()
-                    }) {
+                    });
+                    match result  {
                         Ok(_) => {
                             self.is_connected = true;
                             self.active_path = Some("Psiphon".to_string());
@@ -172,7 +175,7 @@ static WINTUN_STATE: std::sync::OnceLock<std::sync::Mutex<Option<WintunState>>> 
 
 #[cfg(target_os = "windows")]
 struct WintunState {
-    _adapter: wintun::Adapter,
+    _adapter: Arc<Adapter>,
     session: std::sync::Arc<wintun::Session>,
     thread_handle: Option<std::thread::JoinHandle<()>>,
 }
@@ -182,7 +185,7 @@ fn start_wintun_tunnel() -> Result<(), Box<dyn std::error::Error + Send + Sync>>
     use std::sync::Arc;
 
     use wintun::{Wintun, Adapter};
-    let wintun = Wintun::load()?;
+    let wintun = wintun::Wintun::load()?;
     let adapter = Adapter::create(&wintun, "IranVPN", "IranVPN", None)?;
     let session = adapter
         .start_session(wintun::MAX_RING_CAPACITY)
