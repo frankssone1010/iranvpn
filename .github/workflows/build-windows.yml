@@ -1,7 +1,7 @@
 name: Build Windows App
 
 on:
-  workflow_dispatch:   # Allows you to manually run this workflow
+  workflow_dispatch:
 
 jobs:
   build-windows:
@@ -18,11 +18,10 @@ jobs:
           target: x86_64-pc-windows-msvc
           override: true
 
-      - name: Build Windows Client
+      - name: Build Windows client
         working-directory: windows
         run: cargo build --release
 
-      # Optional: Upload the built EXE as an artifact
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
