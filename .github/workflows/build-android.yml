@@ -1,6 +1,6 @@
 name: Build Android APK
 
-on: [workflow_dispatch]  # Allows you to manually trigger the build
+on: [workflow_dispatch]
 
 jobs:
   build:
@@ -15,20 +15,17 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17' # As recommended by the android/README.md
+          java-version: '17'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          packages: "platforms;android-35 build-tools;35.0.0 ndk;25.1.8937393" # Adjust NDK version if needed
+          packages: "platforms;android-35 build-tools;35.0.0 ndk;25.1.8937393"
 
-      - name: Setup Rust
-        uses: actions-rs/toolchain@v1
+      - name: Setup Rust and Android Targets with Retry
+        uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
-          target: aarch64-linux-android, armv7-linux-androideabi, i686-linux-android, x86_64-linux-android
-          override: true
+          targets: aarch64-linux-android, armv7-linux-androideabi, i686-linux-android, x86_64-linux-android
 
       - name: Install cargo-ndk
         run: cargo install cargo-ndk
@@ -36,7 +33,7 @@ jobs:
       - name: Build Rust Core
         run: ./scripts/build-android-core.sh
         env:
-          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/25.1.8937393 # Match NDK version from setup step
+          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/25.1.8937393
 
       - name: Fetch tun2socks prebuilts
         run: ./scripts/fetch-tun2socks-prebuilt.sh
